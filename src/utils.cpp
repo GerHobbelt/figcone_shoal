@@ -1,15 +1,15 @@
 #include "utils.h"
 #include "stream.h"
 #include <figcone_tree/errors.h>
-#include <sfun/string_utils.h>
-#include <gsl/util>
+#include <eel/string_utils.h>
+#include <eel/utility.h>
 #include <algorithm>
 
 namespace figcone::shoal::detail {
 
 bool isBlank(const std::string& str)
 {
-    return std::all_of(str.begin(), str.end(), sfun::isspace);
+    return std::all_of(str.begin(), str.end(), eel::isspace);
 }
 
 void skipLine(Stream& stream)
@@ -26,7 +26,7 @@ void skipWhitespace(Stream& stream, bool withNewLine)
         if (!withNewLine && nextChar == '\n')
             return;
 
-        if (sfun::isspace(nextChar))
+        if (eel::isspace(nextChar))
             stream.skip(1);
         else
             return;
@@ -60,7 +60,7 @@ std::string readWord(Stream& stream, const std::string& stopChars)
             stream,
             [&stopChars](char ch)
             {
-                return sfun::isspace(ch) || stopChars.find(ch) != std::string::npos;
+                return eel::isspace(ch) || stopChars.find(ch) != std::string::npos;
             });
 }
 
@@ -74,11 +74,11 @@ std::optional<std::string> readQuotedString(Stream& stream)
         return {};
 
     stream.skipComments(false);
-    const auto restoreSkipOnExit = gsl::final_action(
+    const auto restoreSkipOnExit = eel::final_action{
             [&stream]
             {
                 stream.skipComments(true);
-            });
+            }};
     const auto pos = stream.position();
     stream.skip(1);
 

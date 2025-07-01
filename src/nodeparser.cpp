@@ -4,14 +4,14 @@
 #include "utils.h"
 #include <figcone_tree/errors.h>
 #include <figcone_tree/tree.h>
-#include <gsl/assert>
+#include <eel/contract.h>
 
 namespace figcone::shoal::detail {
 
 std::string readNodeName(Stream& stream)
 {
     const auto firstChar = stream.read();
-    Expects(firstChar == "#");
+    eel::precondition(firstChar == "#", FIGCONE_SHOAL_EEL_LINE);
 
     auto nodeName = std::string{};
     while (!stream.atEnd()) {

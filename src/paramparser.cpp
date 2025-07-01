@@ -2,8 +2,8 @@
 #include "stream.h"
 #include "utils.h"
 #include <figcone_tree/errors.h>
-#include <sfun/string_utils.h>
-#include <gsl/util>
+#include <eel/string_utils.h>
+#include <eel/utility.h>
 #include <optional>
 #include <utility>
 
@@ -29,25 +29,24 @@ std::optional<std::string> readSingleParam(
 {
     if (isMultiline)
         stream.skipComments(false);
-    const auto restoreSkipOnExit = gsl::final_action(
+    const auto restoreSkipOnExit = eel::final_action{
             [&]
             {
                 if (isMultiline)
                     stream.skipComments(true);
-            });
+            }};
 
     if (const auto quotedParam = readQuotedString(stream))
         return *quotedParam;
-    else {
-        auto result = sfun::trim(readUntil(stream, wordSeparator + "\n"));
-        if (result.empty()) {
-            if (stream.peek() == "," || (paramListValue.empty() && !isMultiline))
-                throw ConfigError{"Parameter list '" + paramName + "' element is missing", stream.position()};
-            if (paramListValue.empty() && isMultiline)
-                return {};
-        }
-        return result;
+
+    auto result = eel::trim(readUntil(stream, wordSeparator + "\n"));
+    if (result.empty()) {
+        if (stream.peek() == "," || (paramListValue.empty() && !isMultiline))
+            throw ConfigError{"Parameter list '" + paramName + "' element is missing", stream.position()};
+        if (paramListValue.empty() && isMultiline)
+            return {};
     }
+    return result;
 }
 
 figcone::TreeParam makeParam(
@@ -108,8 +107,8 @@ figcone::TreeParam readParamValue(Stream& stream, const std::string& paramName, 
         skipWhitespace(stream);
         return readParamOrParamList(stream, paramName, pos, true);
     }
-    else
-        return readParamOrParamList(stream, paramName, pos, false);
+
+    return readParamOrParamList(stream, paramName, pos, false);
 }
 
 } //namespace
